@@ -1,0 +1,11 @@
+/* Master */
+
+
+.leaflet-popup-content-wrapper {
+  color: black;
+  font-family: serif;
+  font-size: 12px;
+  border-radius: 0px;
+  border-color: rgba(0,0,0,0.5);
+  box-shadow: 3px 3px rgba(0,0,0,0.25);
+}
