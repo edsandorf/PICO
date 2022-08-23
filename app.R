@@ -167,20 +167,27 @@ ui <- fluidPage(
   theme = "styles.css",
   # The top bar
   fluidRow(
-    class = "top-panel",
+    class = "top-row",
     h1("Hvor langt vest og sør tror du kongekrabbe har blitt observert?")
   ),
   # The main window
   fluidRow(
+    class = "map-row",
     leafletOutput("map")
   ),
   # Button row
   fluidRow(
+    class = "button-row",
     actionButton("submit", "Send inn din gjettning"),
     actionButton("reset", "Start på nytt")
   ),
   # Footer
   fluidRow(
+    class = "bottom-row",
+    p("Created by: Erlend Dancke Sandorf")
+  ),
+  fluidRow(
+    h2("Testing output only!"),
     verbatimTextOutput("out"),
     h2("distance in km 'as the crow flies' from the north cape"),
     verbatimTextOutput("dist_north_cape"),

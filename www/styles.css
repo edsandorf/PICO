@@ -1,6 +1,47 @@
 /* Master */
+body {
+  line-height: 1.5;
+  font-size: 18px;
+}
 
 
+
+/* TOP ROW */
+.top-row {
+  margin: 20px;
+}
+
+/* MAP ROW */
+.map-row {
+  
+}
+
+/* BUTTON ROW */
+.button-row {
+  
+}
+
+/* BOTTOM ROW */
+.bottom-row {
+  
+}
+
+/* BUTTON ROW AND BUTTONS */
+.button-row{
+  padding: 5px;
+  margin: 5px;
+}
+
+#submit {
+  float:left;
+}
+
+#reset {
+  float: right;
+}
+
+
+/* Leaflet */
 .leaflet-popup-content-wrapper {
   color: black;
   font-family: serif;
