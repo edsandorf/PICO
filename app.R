@@ -134,6 +134,30 @@ avg_guess <- function(conn, table) {
   )
 }
 
+#' Create the WTP question text
+#'
+#' Generates the WTP question based on the treatment. 
+#' 
+#' Alternative phrasing of the second question: 
+#'   "Du er villig til å betale mindre enn..."
+#'   "x % av den noreske befolkning er villig til å betale mindre enn deg."
+#'
+create_wtp_question <- function(wtp, treatment) {
+  # Set values for the distribution
+  mu <- 250
+  sig <- 100
+  
+  # Generate the correct question based on the treatment
+  txt <- switch(treatment,
+                more = paste0("Du er villig til å betale mer enn ",
+                              floor(pnorm(wtp, mu, sig)),
+                              "% av den norske befolkning. Ønsker du å endre hvor mye du er villig til å betale?"),
+                less = paste0(ceiling(pnorm(wtp, mu, sig)), 
+                              "% av den norske befolkning er villig til å betale mer enn deg. Ønsker du å endre hvor mye du er villig til å betale?"))
+
+  return(txt)
+}
+
 # Set up a DB connection ----
 # If not on shinyapps.io, set to local to handle connections for testing
 # if () {
@@ -205,6 +229,9 @@ ui <- fluidPage(
 
 # Server side ----
 server <- function(input, output, session) {
+  # Randomly allocate people to the more than or less than treatment
+  treatment <- sample(c("more", "less"), 1)
+  
   # Map ----
   reactive_map <- reactiveVal(base_map())
   
