@@ -19,7 +19,13 @@
 #'   - We should get age and gender.
 #'   - People who want to join the prize draw should leave their e-mail at the
 #'     stand. We want to keep it completely separate from the data.
-
+#'
+#'   - Treatment: Random assignment into one or two groups (framing):
+#'     * Du er villig til å betale mer enn X % av befolkningen, vil du endre din
+#'       betalingsvilje?
+#'     * X % av befolkningen er villig til å betale mer enn deg, vil du endre 
+#'       din betalingsvilje?
+#'
 # Load packages ----
 library(shiny)
 library(leaflet)
@@ -139,16 +145,16 @@ Sys.setenv(R_CONFIG_ACTIVE = "local")
 db_config <- config::get("dataconnection")
 
 # Set up the pool for effective handling of multiple connections
-pool <- pool::dbPool(
-  drv = RMariaDB::MariaDB(),
-  dbname = db_config$dbname,
-  host = db_config$host,
-  username = db_config$username,
-  password = db_config$password,
-  ssl.key = db_config$ssl.key,
-  ssl.cert = db_config$ssl.cert,
-  ssl.ca = db_config$ssl.ca
-)
+# pool <- pool::dbPool(
+#   drv = RMariaDB::MariaDB(),
+#   dbname = db_config$dbname,
+#   host = db_config$host,
+#   username = db_config$username,
+#   password = db_config$password,
+#   ssl.key = db_config$ssl.key,
+#   ssl.cert = db_config$ssl.cert,
+#   ssl.ca = db_config$ssl.ca
+# )
 
 
 # Define global variables ----
@@ -178,7 +184,7 @@ ui <- fluidPage(
   # Button row
   fluidRow(
     class = "button-row",
-    actionButton("submit", "Send inn din gjettning"),
+    actionButton("submit", "Send inn ditt svar"),
     actionButton("reset", "Start på nytt")
   ),
   # Footer
