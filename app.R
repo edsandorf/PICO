@@ -28,6 +28,7 @@
 #'
 # Load packages ----
 library(shiny)
+library(shinyjs)
 library(leaflet)
 library(htmltools)
 library(geosphere)
@@ -195,6 +196,7 @@ north_cape <- list(
 # User interface ----
 ui <- fluidPage(
   theme = "styles.css",
+  shinyjs::useShinyjs(),
   # The top bar
   fluidRow(
     class = "top-row",
@@ -263,7 +265,7 @@ server <- function(input, output, session) {
   
   ## Reset the map ----
   observeEvent(input$reset, {
-    reactive_map(base_map())
+    shinyjs::refresh()
   })
   
   ## Submit the guess ----
