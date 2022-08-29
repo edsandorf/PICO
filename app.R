@@ -279,7 +279,7 @@ server <- function(input, output, session) {
       "lat" = input$map_click$lat
     )
     
-    save_db(pool, guesses, "location_guess")
+    # save_db(pool, guesses, "location_guess")
     
     # Move to the next part of the game?
   })
