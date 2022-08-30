@@ -36,6 +36,9 @@ library(pool)
 library(RMariaDB)
 library(config)
 
+# Source the global file
+source("global.R")
+
 # Define functions ----
 #' Define the base map function
 #' 
@@ -135,29 +138,7 @@ avg_guess <- function(conn, table) {
   )
 }
 
-#' Create the WTP question text
-#'
-#' Generates the WTP question based on the treatment. 
-#' 
-#' Alternative phrasing of the second question: 
-#'   "Du er villig til å betale mindre enn..."
-#'   "x % av den noreske befolkning er villig til å betale mindre enn deg."
-#'
-create_wtp_question <- function(wtp, treatment) {
-  # Set values for the distribution
-  mu <- 250
-  sig <- 100
-  
-  # Generate the correct question based on the treatment
-  txt <- switch(treatment,
-                more = paste0("Du er villig til å betale mer enn ",
-                              floor(pnorm(wtp, mu, sig)),
-                              "% av den norske befolkning. Ønsker du å endre hvor mye du er villig til å betale?"),
-                less = paste0(ceiling(pnorm(wtp, mu, sig)), 
-                              "% av den norske befolkning er villig til å betale mer enn deg. Ønsker du å endre hvor mye du er villig til å betale?"))
 
-  return(txt)
-}
 
 # Set up a DB connection ----
 # If not on shinyapps.io, set to local to handle connections for testing
@@ -195,34 +176,35 @@ north_cape <- list(
 
 # User interface ----
 ui <- fluidPage(
-  theme = "styles.css",
+  class = "page",
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+  ),
   shinyjs::useShinyjs(),
   # The top bar
   fluidRow(
     class = "top-row",
-    h1("Hvor langt vest og sør tror du kongekrabbe har blitt observert?")
+    h1("PICO deltar på forskningsdagene!")
   ),
   # The main window
   fluidRow(
-    class = "map-row",
-    leafletOutput("map")
-  ),
-  # Button row
-  fluidRow(
-    class = "button-row",
-    actionButton("submit", "Send inn ditt svar"),
-    actionButton("reset", "Start på nytt")
+    class = "ui-row",
+    uiOutput("user_interface")
   ),
   # Footer
   fluidRow(
     class = "bottom-row",
-    p("Created by: Erlend Dancke Sandorf")
+    div(
+      p(id = "creator", "Created by: Erlend Dancke Sandorf"),
+      actionButton("reset", "Start på nytt")
+    )
   ),
   fluidRow(
     h2("Testing output only!"),
+    verbatimTextOutput("current_page"),
     verbatimTextOutput("out"),
     h2("distance in km 'as the crow flies' from the north cape"),
-    verbatimTextOutput("dist_north_cape"),
+    verbatimTextOutput("distance_km"),
     h2("distance in km 'as the crow flies' from true location"),
     verbatimTextOutput("dist_true_location")
   )
@@ -234,11 +216,50 @@ server <- function(input, output, session) {
   # Randomly allocate people to the more than or less than treatment
   treatment <- sample(c("more", "less"), 1)
   
-  # Map ----
+  # Create a reactive value for the page that can update when the submit button
+  # is clicked. 
+  page <- reactiveVal("page_map")
+  distance_km_north_cape <- reactiveVal(0)
+  distance_km_true_location <- reactiveVal(0)
+  wtp_question <- reactiveVal("")
+  
+  # Reset the application ----
+  observeEvent(input$reset, {
+    shinyjs::refresh() # Does this trigger onSessionEnded()?
+  })
+  
+  # When the session ends ----
+  # session$onSessionEnded(
+  # Save the guess to the database. NB! Each click of the button creates a new
+  # entry in the database
+  # guesses <- list(
+  #   "id" = paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = ""),
+  #   "timestamp" = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+  #   "lng" = input$map_click$lng,
+  #   "lat" = input$map_click$lat
+  # )
+  # input$wtp_original
+  # input$wtp_revised
+  # save_db(pool, guesses, "location_guess")
+  # )
+  
+  # User interface ----
+  ## UI: Map ----
   reactive_map <- reactiveVal(base_map())
   
   output$map <- renderLeaflet({
     reactive_map()
+  })
+  
+  # By default the next button is disabled until a choice is made
+  output$map_ui <- renderUI({
+    tagList(
+      h2("Hvor langt vest og sør tror du kongekrabbe har blitt observert?"),
+      leafletOutput("map"),
+      shinyjs::disabled(
+        actionButton("submit_guess", "Send inn ditt svar")
+      ),
+    )
   })
   
   # Add an observer for the event that the map is clicked. When clicked, get 
@@ -261,56 +282,183 @@ server <- function(input, output, session) {
           closeButton = TRUE
         )
       )
-  })
-  
-  ## Reset the map ----
-  observeEvent(input$reset, {
-    shinyjs::refresh()
-  })
-  
-  ## Submit the guess ----
-  observeEvent(input$submit, {
-    # Save the guess to the database. NB! Each click of the button creates a new
-    # entry in the database
-    guesses <- list(
-      "id" = paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = ""),
-      "timestamp" = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-      "lng" = input$map_click$lng,
-      "lat" = input$map_click$lat
+    
+    # Calculate the distance in km from Nordkapp (updating a reactive value)
+    distance_km_north_cape(
+      geosphere::distHaversine(
+        unlist(north_cape),
+        c(click$lng, click$lat),
+        r = 6378.137
+      )
     )
     
-    # save_db(pool, guesses, "location_guess")
+    # Calcualte the distance in km from the true observed location
+    distance_km_true_location(
+      geosphere::distHaversine(
+        unlist(true_crab_location),
+        c(click$lng, click$lat),
+        r = 6378.137
+      )
+    )
     
-    # Move to the next part of the game?
+    # Enable the submit button when a guess is made
+    shinyjs::enable("submit_guess")
+
   })
   
-  # When the session ends ----
-  # session$onSessionEnded(
-  #   on_session_ended()
-  # )
+  # Submit guess
+  observeEvent(input$submit_guess, {
+
+    # Update page
+    page("page_wtp_original")
+    
+  })
+  
+  ## UI: Original willingness-to-pay ----
+  output$wtp_original <- renderUI({
+    tagList(
+      h2(paste0("Du gjettet at kongekrabbe har blitt observert ",
+                round(distance_km_north_cape(), 0),
+                "km fra Nordkapp")),
+      shiny::numericInput("wtp_original",
+                       label = "Hvor mye er du villig til å betale per år for at den ikke skal etablere seg der, men at den blir stoppet ved Nordkapp?",
+                       value= "",
+                       width = "25%"),
+      actionButton("submit_wtp_original", "Send inn ditt svar"),
+    )
+  })
+  
+  observeEvent(input$submit_wtp_original, {
+    # Make WTP calculations and store the data in reactive values
+    txt <- create_wtp_question(input$wtp_original,
+                               distance_km_north_cape(),
+                               treatment)
+    
+    wtp_question(txt)
+    
+    # Update current page
+    page("page_wtp_information")
+  })
+  
+  ## UI: Willingness-to-pay information ----
+  output$wtp_information <- renderUI({
+    tagList(
+      h2(
+        paste0("Basert på våre beregninger av den norske befolknings betalingsvilje for å stoppe kongekrabbe fra å etablere seg ",
+               round(distance_km_north_cape(), 0),
+               "km fra Nordkapp",
+               wtp_question())
+      ),
+      div(actionButton("submit_yes", "Ja"),
+          actionButton("submit_no", "Nei")),
+    )
+  })
+  
+  # If yes, send to page where they can revise their WTP
+  observeEvent(input$submit_yes, {
+    page("page_wtp_revised")
+  })
+  
+  # If no, send to page with socio-demographics and set revise WTP to NA
+  observeEvent(input$submit_no, {
+    page("page_socio_dem")
+  })
+  
+  ## UI: Revise willingness-to-pay ----
+  output$wtp_revised <- renderUI({
+    tagList(
+      shiny::numericInput("wtp_revised",
+                          label = paste0(
+                            "Du sa du ønsket å endre hvor mye du vil betale. ",
+                            "Hvor mye er du villig til å betale per år for at den ikke skal etablere seg ", 
+                            round(distance_km_north_cape(), 0),
+                            "km fra Nordkapp",
+                            "men at den blir stoppet fra å etablere seg lenger vest og sør?"
+                            ),
+                          value= "",
+                          width = "25%"),
+      actionButton("submit_wtp_revised", "Send inn ditt svar")
+    )
+  })
+  
+  observeEvent(input$submit_wtp_revised, {
+    page("page_socio_dem")
+  })
+  
+  ## UI: Socio-demographics ----
+  output$socio_dem <- renderUI({
+    tagList(
+      h2("Helt til slutt:"),
+      shiny::numericInput(inputId = "age",
+                       label = "Hvor gammel er du?",
+                       value= "",
+                       width = "50%"),
+      selectInput(inputId = "gender",
+                  label = "Jeg er: ",
+                  choices = c("", "Kvinne", "Mann", "Annet", "Foretrekker ikke å si"),
+                  selected = character(0),
+                  width = "50%"),
+      actionButton("submit_socio", "Send inn ditt svar")
+        
+    )
+  })
+  
+  observeEvent(input$submit_socio, {
+    page("page_final")
+  })
+  
+  ## UI: Final page ----
+  output$page_final <- renderUI({
+    tagList(
+      h2("Tusen takk for at du deltok!"),
+      h3("Husk å skrive deg på liste på standen om du ønsker å være med i trekningen av premie")
+    )
+  })
+  
+  ## UI: Reactive UI ----
+  user_interface <- reactive({
+    
+    current_page <- page()
+    interface <- switch(current_page,
+                        page_map = uiOutput("map_ui"),
+                        page_wtp_original = uiOutput("wtp_original"),
+                        page_wtp_information = uiOutput("wtp_information"),
+                        page_wtp_revised = uiOutput("wtp_revised"),
+                        page_socio_dem = uiOutput("socio_dem"),
+                        page_final = uiOutput("page_final")
+    )
+    
+    # Return the interface
+    return(
+      interface
+    )
+  })
+  
+  # Render the user interface
+  output[["user_interface"]] <- renderUI({
+    user_interface()
+  })
   
   
   
-  ## This is included for debugging ----
+  # DEBUGGING ----
+  output$current_page <- renderText({
+    page()
+  })
+  
   output$out <- renderPrint({
     input$map_click
   })
   
-  output$dist_true_location <- renderPrint({
-    geosphere::distHaversine(
-      unlist(true_crab_location),
-      c(input$map_click$lng, input$map_click$lat),
-      r = 6378.137
-    )
+  output$distance_km <- renderText({
+    distance_km_north_cape()
   })
   
-  output$dist_north_cape <- renderPrint({
-    geosphere::distHaversine(
-      unlist(north_cape),
-      c(input$map_click$lng, input$map_click$lat),
-      r = 6378.137
-    )
+  output$dist_true_location <- renderText({
+    distance_km_true_location()
   })
+  
 }
 
+# Combine the app
 shinyApp(ui, server)

@@ -1,45 +1,98 @@
 /* Master */
 body {
+  padding-left: 10%;
+  padding-right: 10%;
   line-height: 1.5;
   font-size: 18px;
 }
 
+.page {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
 
 
 /* TOP ROW */
 .top-row {
-  margin: 20px;
+  background-color: #dae1ed;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  padding: 10px 50px 10px;
+  min-height: 100px;
 }
 
-/* MAP ROW */
-.map-row {
-  
-}
-
-/* BUTTON ROW */
-.button-row {
-  
+/* UI row */
+.ui-row {
+  padding: 20px 50px;
+  min-height: 500px;
 }
 
 /* BOTTOM ROW */
 .bottom-row {
-  
+  background-color: #dae1ed;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  padding: 50px 50px;
+
 }
 
-/* BUTTON ROW AND BUTTONS */
-.button-row{
-  padding: 5px;
-  margin: 5px;
-}
 
-#submit {
+/* BUTTONS */
+#submit_guess {
   float:left;
+  margin-top: 20px;
+  background-color: #f7f7f7;
+  border: 2px solid #393b3a;
+  font-weight: 700;
+}
+
+#submit_wtp_original {
+  float:left;
+  margin-top: 20px;
+  background-color: #f7f7f7;
+  border: 2px solid #393b3a;
+  font-weight: 700;
+}
+
+#submit_yes {
+  float:left;
+  margin-top: 20px;
+  margin-right: 100px;
+  background-color: #f7f7f7;
+  border: 2px solid #393b3a;
+  font-weight: 700;  
+}
+
+#submit_no {
+  float:left;
+  margin-top: 20px;
+  background-color: #f7f7f7;
+  border: 2px solid #393b3a;
+  font-weight: 700;  
+}
+
+#submit_wtp_revised {
+  float:left;
+  margin-top: 20px;
+  background-color: #f7f7f7;
+  border: 2px solid #393b3a;
+  font-weight: 700;  
+}
+
+
+#submit_socio {
+  float:left;
+  margin-top: 20px;
+  background-color: #f7f7f7;
+  border: 2px solid #393b3a;
+  font-weight: 700;  
 }
 
 #reset {
   float: right;
 }
 
+
+#creator {
+  float: left;
+}
 
 /* Leaflet */
 .leaflet-popup-content-wrapper {
@@ -50,3 +103,4 @@ body {
   border-color: rgba(0,0,0,0.5);
   box-shadow: 3px 3px rgba(0,0,0,0.25);
 }
+
