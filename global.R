@@ -8,15 +8,15 @@
 #'
 create_wtp_question <- function(wtp, distance, treatment) {
   # Set values for the distribution
-  mu <- 1.8 * distance
-  sig <- 1.2 * distance
+  mu <- 1.96 * distance
+  sig <- 1.35 * distance
   
   # Generate the correct question based on the treatment
   txt <- switch(treatment,
                 more = paste0(" er du villig til å betale mer enn ",
-                              floor(pnorm(wtp, mu, sig)),
+                              floor(pnorm(wtp, mu, sig) * 100),
                               "% av den norske befolkning.\n\n Ønsker du å endre hvor mye du er villig til å betale?"),
-                less = paste0(" er ", ceiling(pnorm(wtp, mu, sig)), 
+                less = paste0(" er ", ceiling(pnorm(wtp, mu, sig) * 100), 
                               "% av den norske befolkning er villig til å betale mer enn deg.\n\n Ønsker du å endre hvor mye du er villig til å betale?"))
   
   return(txt)
