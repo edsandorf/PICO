@@ -33,7 +33,8 @@ library(leaflet)
 library(htmltools)
 library(geosphere)
 library(pool)
-library(RMariaDB)
+library(DBI)
+library(RSQLite)
 library(config)
 
 # Source the global file
