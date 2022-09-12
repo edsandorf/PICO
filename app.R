@@ -70,12 +70,12 @@ base_map <- function() {
                                     "border-color" = "rgba(0,0,0,0.5)"
                                   )
       )
-    ) %>% 
-    addMarkers(
-      lng = true_crab_location[[1]],
-      lat = true_crab_location[[2]],
-      label = HTML("True crab location")
-    )
+    ) #%>% 
+    # addMarkers(
+    #   lng = true_crab_location[[1]],
+    #   lat = true_crab_location[[2]],
+    #   label = HTML("True crab location")
+    # )
 }
 
 #' Save to database
