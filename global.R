@@ -12,7 +12,7 @@ create_wtp_question <- function(wtp, distance, treatment) {
   sig <- 1.35 * distance
   
   start <- paste0("Basert på våre beregninger er gjennomsnittlig betalingsvilje for å stoppe kongekrabbe fra å etablere seg ",
-                round(distance, 0), " km fra Nordkapp ", round(mu, 0), " kroner. Du har sagt du er villig til å betale ", wtp, " kroner. Det vil si at")
+                round(distance, 0), " km fra Nordkapp ", round(mu, 0), " kroner per år. Du har sagt du er villig til å betale ", wtp, " kroner. Det vil si at")
   
   # Generate the correct question based on the treatment
   middle <- switch(treatment,
