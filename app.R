@@ -356,10 +356,7 @@ server <- function(input, output, session) {
   output$wtp_information <- renderUI({
     tagList(
       h2(
-        paste0("Basert på våre beregninger av den norske befolknings betalingsvilje for å stoppe kongekrabbe fra å etablere seg ",
-               round(distance_km_north_cape(), 0),
-               "km fra Nordkapp",
-               wtp_question())
+        wtp_question()
       ),
       div(actionButton("submit_yes", "Ja"),
           actionButton("submit_no", "Nei")),
