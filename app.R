@@ -216,6 +216,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   # Randomly allocate people to the more than or less than treatment
   treatment <- sample(c("more", "less"), 1)
+  timestamp_start <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   
   # Create a reactive value for the page that can update when the submit button
   # is clicked. 
@@ -230,19 +231,29 @@ server <- function(input, output, session) {
   })
   
   # When the session ends ----
-  # session$onSessionEnded(
-  # Save the guess to the database. NB! Each click of the button creates a new
-  # entry in the database
-  # guesses <- list(
-  #   "id" = paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = ""),
-  #   "timestamp" = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-  #   "lng" = input$map_click$lng,
-  #   "lat" = input$map_click$lat
-  # )
-  # input$wtp_original
-  # input$wtp_revised
-  # save_db(pool, guesses, "location_guess")
-  # )
+  session$onSessionEnded(
+    function() {
+      # Timestamp 
+      timestamp_end <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      
+      # Save the guess to the database. NB! Each click of the button creates a new
+      # entry in the database
+      guesses <- list(
+        "id" = paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = ""),
+        "timestamp_start" = timestamp_start,
+        "timestart_end" = timestamp_end, 
+        "treatment" = treatment,
+        "lng" = input$map_click$lng,
+        "lat" = input$map_click$lat,
+        "wtp_original" = input$wtp_original,
+        "wtp_revised" = input$wtp_revised,
+        "age" = input$age,
+        "gender" = input$gender
+      )
+      
+      # save_db(pool, guesses, "location_guess")
+    }
+  )
   
   # User interface ----
   ## UI: Map ----
