@@ -149,7 +149,7 @@ avg_guess <- function(conn, table) {
 Sys.setenv(R_CONFIG_ACTIVE = "local")
 
 # Get the connection details
-db_config <- config::get("dataconnection")
+# db_config <- config::get("dataconnection")
 
 # Set up the pool for effective handling of multiple connections
 # pool <- pool::dbPool(
