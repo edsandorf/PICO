@@ -56,18 +56,20 @@ base_map <- function() {
     setView(lng = 18.949252, lat = 69.673561, zoom = 5) %>% 
     # addTiles() %>%
     addProviderTiles(providers$Esri.OceanBasemap) %>%
-    addLabelOnlyMarkers(
+    addMarkers(
       lng = 25.783742,
       lat = 71.171894,
-      label = HTML("<b>Nordkapp:</b> Norske myndigheter <br/> ønsker å stoppe krabben fra å <br/>spre seg lenger vest og sør"),
+      label = HTML("<b>Nordkapp:</b> Norske myndigheter <br/> ønsker å stoppe krabben fra å <br/>spre seg lenger vest og sør (til venstre og nedover)"),
       labelOptions = labelOptions(noHide = TRUE,
                                   direction = "right",
                                   style = list(
                                     "color" = "black",
                                     "font-family" = "serif",
                                     "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
-                                    "font-size" = "12px",
-                                    "border-color" = "rgba(0,0,0,0.5)"
+                                    "font-size" = "16px",
+                                    "border-color" = "rgba(0,0,0,0.5)",
+                                    "margin-left" = "10px",
+                                    "padding-left" = "10px"
                                   )
       )
     ) #%>% 
