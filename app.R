@@ -48,16 +48,18 @@ pool <- pool::dbPool(
 #' The function does not take any arguments
 base_map <- function() {
   leaflet() %>% 
+    addProviderTiles(providers$Esri.OceanBasemap) %>%
     clearControls() %>% 
     clearMarkers() %>% 
     clearPopups() %>% 
-    setView(lng = 18.949252, lat = 69.673561, zoom = 5) %>% 
-    # addTiles() %>%
-    addProviderTiles(providers$Esri.OceanBasemap) %>%
+    # setView(lng = 18.949252, lat = 69.673561, zoom = 5) %>%
+    setView(lng = 15.949252, lat = 69.673561, zoom = 5) %>%
+    fitBounds(lng1 = 15, lat1 = 72, lng2 = 20, lat2 = 58) %>%
     addMarkers(
       lng = 25.783742,
       lat = 71.171894,
-      label = HTML("<b>Nordkapp:</b> Norske myndigheter <br/> ønsker å stoppe krabben fra å <br/>spre seg lenger vest og sør (til venstre og nedover)"),
+      # label = HTML("<b>Nordkapp:</b> Norske myndigheter <br/> ønsker å stoppe krabben fra å <br/>spre seg lenger vest og sør (til venstre og nedover)"),
+      label = HTML("<b>Nordkapp</b> "),
       labelOptions = labelOptions(noHide = TRUE,
                                   direction = "right",
                                   style = list(
@@ -78,14 +80,6 @@ base_map <- function() {
     # )
 }
 
-
-
-
-
-
-
-
-
 # Define global variables ----
 true_crab_location <- list(
   lng = 17.31445,
@@ -105,23 +99,23 @@ ui <- fluidPage(
   ),
   shinyjs::useShinyjs(),
   # The top bar
-  fluidRow(
-    class = "top-row",
-    h1("PICO deltar på forskningsdagene!")
-  ),
+  # fluidRow(
+  #   class = "top-row",
+  #   h1("PICO deltar på forskningsdagene!")
+  # ),
   # The main window
   fluidRow(
     class = "ui-row",
     uiOutput("user_interface")
-  ),
+  )#,
   # Footer
-  fluidRow(
-    class = "bottom-row",
-    div(
-      p(id = "creator", "Created by: Erlend Dancke Sandorf"),
-      actionButton("reset", "Start på nytt")
-    )
-  )
+  # fluidRow(
+  #   class = "bottom-row",
+  #   div(
+  #     p(id = "creator", "Created by: Erlend Dancke Sandorf"),
+  #     actionButton("reset", "Start på nytt")
+  #   )
+  # )
   # fluidRow(
   #   h2("Testing output only!"),
   #   verbatimTextOutput("current_page"),
@@ -198,11 +192,12 @@ server <- function(input, output, session) {
   # By default the next button is disabled until a choice is made
   output$map_ui <- renderUI({
     tagList(
-      h2("Hvor langt vest og sør tror du kongekrabbe har blitt observert?"),
-      leafletOutput("map"),
+      h2("Norske myndigheter ønsker og stoppe kongekrabbe fra å spre seg sør-vest fra Nordkapp (til venstre og nedover langs kysten av Norge). Hvor tror du kongekrabbe har blitt sett og fanget?"),
+      div(class = "map-output", leafletOutput("map")),
       shinyjs::disabled(
         actionButton("submit_guess", "Send inn ditt svar")
       ),
+      actionButton("reset", "Start på nytt")
     )
   })
   
@@ -269,10 +264,14 @@ server <- function(input, output, session) {
                 round(distance_km_north_cape(), 0),
                 "km fra Nordkapp")),
       shiny::numericInput("wtp_original",
-                       label = "Hvor mye er du villig til å betale per år for at den ikke skal etablere seg der, men at den blir stoppet ved Nordkapp?",
+                       # label = "Hvor mye er du villig til å betale per år for at den ikke skal etablere seg der, men at den blir stoppet ved Nordkapp?",
+                       label = paste0("Hvor mye er du villig til å betale per år for at den skal bli stoppet fra å etablere seg så langt sør-vest som ",
+                                      round(distance_km_north_cape(), 0),
+                                      "km fra Nordkapp?"),
                        value= "",
                        width = "75%"),
       actionButton("submit_wtp_original", "Send inn ditt svar"),
+      actionButton("reset", "Start på nytt")
     )
   })
   
@@ -302,6 +301,7 @@ server <- function(input, output, session) {
       ),
       div(actionButton("submit_yes", "Ja"),
           actionButton("submit_no", "Nei")),
+      actionButton("reset", "Start på nytt")
     )
   })
   
@@ -321,14 +321,13 @@ server <- function(input, output, session) {
       shiny::numericInput("wtp_revised",
                           label = paste0(
                             "Du sa du ønsket å endre hvor mye du vil betale. ",
-                            "Hvor mye er du villig til å betale per år for at den ikke skal etablere seg ", 
+                            "Hvor mye er du villig til å betale per år for at den skal bli stoppet fra å etablere seg så langt sør-vest som ",
                             round(distance_km_north_cape(), 0),
-                            "km fra Nordkapp",
-                            "men at den blir stoppet fra å etablere seg lenger vest og sør?"
-                            ),
+                            "km fra Nordkapp?"),
                           value= "",
                           width = "75%"),
-      actionButton("submit_wtp_revised", "Send inn ditt svar")
+      actionButton("submit_wtp_revised", "Send inn ditt svar"),
+      actionButton("reset", "Start på nytt")
     )
   })
   
@@ -355,7 +354,8 @@ server <- function(input, output, session) {
                   choices = c("", "Kvinne", "Mann", "Annet", "Foretrekker ikke å si"),
                   selected = character(0),
                   width = "75%"),
-      actionButton("submit_socio", "Send inn ditt svar")
+      actionButton("submit_socio", "Send inn ditt svar"),
+      actionButton("reset", "Start på nytt")
         
     )
   })
@@ -376,8 +376,10 @@ server <- function(input, output, session) {
   output$page_final <- renderUI({
     tagList(
       h2("Tusen takk for at du deltok!"),
-      h3("Husk å skrive deg på liste på standen om du ønsker å være med i trekningen av premie")
+      h3("Husk å skrive deg på liste på standen om du ønsker å være med i trekningen av premie"),
+      actionButton("reset", "Start på nytt")
     )
+    
   })
   
   ## UI: Reactive UI ----
