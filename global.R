@@ -20,7 +20,7 @@ create_wtp_question <- function(wtp, distance, treatment) {
                               floor(pnorm(wtp, mu, sig) * 100),
                               "% av den norske befolkningen"),
                 less = paste0(ceiling((1 - pnorm(wtp, mu, sig)) * 100), 
-                              "% av den norske befolkning er villig til å betale mer enn deg."))
+                              "% av den norske befolkning villig til å betale mer enn deg."))
   
   end <- "Ønsker du å endre hvor mye du er villig til å betale?"
   
