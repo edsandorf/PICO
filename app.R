@@ -5,27 +5,8 @@
 #'
 #' Author: Erlend Dancke Sandorf
 #'
-#' Still to do:
-#'   - Calculate the distance between the selected point and the true crab loc
-#'   - Calculate the running average of the distances
-#'   - Calculate the error of the running average
-#'   - Calculate the running average of the individual errors
-#'   - Extend to WTP:
-#'     * How much would you be willing to pay to avoid it spreading and
-#'       establishing as far as you have indicated? (record response)
-#'     * Using the km spread as the scenario baseline, establish where they are
-#'       in the WTP distribution and report to them. Ask if they want to revise
-#'       their WTP, if yes, state the new one. 
-#'   - We should get age and gender.
-#'   - People who want to join the prize draw should leave their e-mail at the
-#'     stand. We want to keep it completely separate from the data.
 #'
-#'   - Treatment: Random assignment into one or two groups (framing):
-#'     * Du er villig til å betale mer enn X % av befolkningen, vil du endre din
-#'       betalingsvilje?
-#'     * X % av befolkningen er villig til å betale mer enn deg, vil du endre 
-#'       din betalingsvilje?
-#'
+
 # Load packages ----
 library(shiny)
 library(shinyjs)
@@ -34,11 +15,28 @@ library(htmltools)
 library(geosphere)
 library(pool)
 library(DBI)
-library(RSQLite)
+library(RMariaDB)
 library(config)
+library(tibble)
 
 # Source the global file
 source("global.R")
+
+# Get the connection details
+db_config <- config::get("dataconnection")
+
+# Set up the pool for effective handling of multiple connections
+pool <- pool::dbPool(
+  drv = RMariaDB::MariaDB(),
+  dbname = db_config$dbname,
+  host = db_config$host,
+  username = db_config$username,
+  password = db_config$password
+  # ssl.key = db_config$ssl.key,
+  # ssl.cert = db_config$ssl.cert,
+  # ssl.ca = db_config$ssl.ca
+)
+
 
 # Define functions ----
 #' Define the base map function
@@ -128,6 +126,7 @@ ui <- fluidPage(
     h2("Testing output only!"),
     verbatimTextOutput("current_page"),
     verbatimTextOutput("out"),
+    verbatimTextOutput("results"),
     h2("distance in km 'as the crow flies' from the north cape"),
     verbatimTextOutput("distance_km"),
     h2("distance in km 'as the crow flies' from true location"),
@@ -139,6 +138,7 @@ ui <- fluidPage(
 # Server side ----
 server <- function(input, output, session) {
   # Randomly allocate people to the more than or less than treatment
+  id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "") 
   treatment <- sample(c("more", "less"), 1)
   timestamp_start <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   
@@ -149,6 +149,20 @@ server <- function(input, output, session) {
   distance_km_true_location <- reactiveVal(0)
   wtp_question <- reactiveVal("")
   
+  # Create an empty tibble and assign values to it.
+  results <- tibble(
+    id = id,
+    timestamp_start = timestamp_start,
+    timestamp_end = NA, 
+    treatment = treatment,
+    lng = NA,
+    lat = NA,
+    wtp_original = NA,
+    wtp_revised = NA,
+    age = NA,
+    gender = NA
+  )
+  
   # Reset the application ----
   observeEvent(input$reset, {
     shinyjs::refresh() # Does this trigger onSessionEnded()?
@@ -158,24 +172,18 @@ server <- function(input, output, session) {
   session$onSessionEnded(
     function() {
       # Timestamp 
-      timestamp_end <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      results$timestamp_end <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       
       # Save the guess to the database. NB! Each click of the button creates a new
       # entry in the database
-      guesses <- list(
-        "id" = paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = ""),
-        "timestamp_start" = timestamp_start,
-        "timestart_end" = timestamp_end, 
-        "treatment" = treatment,
-        "lng" = input$map_click$lng,
-        "lat" = input$map_click$lat,
-        "wtp_original" = input$wtp_original,
-        "wtp_revised" = input$wtp_revised,
-        "age" = input$age,
-        "gender" = input$gender
+      
+      dbWriteTable(
+        conn = pool,
+        name = "location_guesses",
+        value = results,
+        append = TRUE
       )
       
-      # save_db(pool, guesses, "location_guess")
     }
   )
   
@@ -204,6 +212,10 @@ server <- function(input, output, session) {
   observeEvent(input$map_click, {
     click <- input$map_click
     text <- "Du har gjettet at <br/> kongekrabbe har blitt <br/> observert her"
+    
+    # Add guess to results 
+    results$lng <<- click$lng
+    results$lat <<- click$lat
     
     # Define a proxy to avoid redrawing the map every time a new click is made
     proxy <- leafletProxy("map")
@@ -264,6 +276,12 @@ server <- function(input, output, session) {
     )
   })
   
+  # Observe changes to WTP question to capture WTP without clicking submit
+  observe({
+    input$wtp_original
+    results$wtp_original <<- input$wtp_original
+  })
+  
   observeEvent(input$submit_wtp_original, {
     # Make WTP calculations and store the data in reactive values
     txt <- create_wtp_question(input$wtp_original,
@@ -314,6 +332,12 @@ server <- function(input, output, session) {
     )
   })
   
+  # Observe changes to WTP question to capture WTP without clicking submit
+  observe({
+    input$wtp_revised
+    results$wtp_revised <<- input$wtp_revised
+  })
+  
   observeEvent(input$submit_wtp_revised, {
     page("page_socio_dem")
   })
@@ -334,6 +358,14 @@ server <- function(input, output, session) {
       actionButton("submit_socio", "Send inn ditt svar")
         
     )
+  })
+  
+  # Observe changes to the sociodemographic questions
+  observe({
+    input$age
+    input$gender
+    results$age <<- input$age
+    results$gender <<- input$gender
   })
   
   observeEvent(input$submit_socio, {
@@ -381,6 +413,10 @@ server <- function(input, output, session) {
   
   output$out <- renderPrint({
     input$map_click
+  })
+  
+  output$results <- renderPrint({
+    results
   })
   
   output$distance_km <- renderText({
