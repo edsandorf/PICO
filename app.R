@@ -269,7 +269,7 @@ server <- function(input, output, session) {
                                       round(distance_km_north_cape(), 0),
                                       "km fra Nordkapp?"),
                        value= "",
-                       width = "75%"),
+                       width = "100%"),
       actionButton("submit_wtp_original", "Send inn ditt svar"),
       actionButton("reset", "Start på nytt")
     )
@@ -325,7 +325,7 @@ server <- function(input, output, session) {
                             round(distance_km_north_cape(), 0),
                             "km fra Nordkapp?"),
                           value= "",
-                          width = "75%"),
+                          width = "100%"),
       actionButton("submit_wtp_revised", "Send inn ditt svar"),
       actionButton("reset", "Start på nytt")
     )
@@ -348,12 +348,12 @@ server <- function(input, output, session) {
       shiny::numericInput(inputId = "age",
                        label = "Hvor gammel er du?",
                        value= "",
-                       width = "75%"),
+                       width = "100%"),
       selectInput(inputId = "gender",
                   label = "Jeg er: ",
                   choices = c("", "Kvinne", "Mann", "Annet", "Foretrekker ikke å si"),
                   selected = character(0),
-                  width = "75%"),
+                  width = "100%"),
       actionButton("submit_socio", "Send inn ditt svar"),
       actionButton("reset", "Start på nytt")
         
