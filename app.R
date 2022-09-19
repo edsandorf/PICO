@@ -121,17 +121,17 @@ ui <- fluidPage(
       p(id = "creator", "Created by: Erlend Dancke Sandorf"),
       actionButton("reset", "Start på nytt")
     )
-  ),
-  fluidRow(
-    h2("Testing output only!"),
-    verbatimTextOutput("current_page"),
-    verbatimTextOutput("out"),
-    verbatimTextOutput("results"),
-    h2("distance in km 'as the crow flies' from the north cape"),
-    verbatimTextOutput("distance_km"),
-    h2("distance in km 'as the crow flies' from true location"),
-    verbatimTextOutput("dist_true_location")
   )
+  # fluidRow(
+  #   h2("Testing output only!"),
+  #   verbatimTextOutput("current_page"),
+  #   verbatimTextOutput("out"),
+  #   verbatimTextOutput("results"),
+  #   h2("distance in km 'as the crow flies' from the north cape"),
+  #   verbatimTextOutput("distance_km"),
+  #   h2("distance in km 'as the crow flies' from true location"),
+  #   verbatimTextOutput("dist_true_location")
+  # )
   
 )
 
