@@ -91,7 +91,7 @@ save_db <- function(conn, x, table) {
 #   value = tibble(
 #     id = paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = ""),
 #     timestamp_start = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-#     timestart_end = format(Sys.time(), "%Y-%m-%d %H:%M:%S"), 
+#     timestamp_end = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
 #     treatment = "TREA",
 #     lng = 71.00000000,
 #     lat = 71.00000000,
