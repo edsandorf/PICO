@@ -271,7 +271,7 @@ server <- function(input, output, session) {
       shiny::numericInput("wtp_original",
                        label = "Hvor mye er du villig til å betale per år for at den ikke skal etablere seg der, men at den blir stoppet ved Nordkapp?",
                        value= "",
-                       width = "25%"),
+                       width = "75%"),
       actionButton("submit_wtp_original", "Send inn ditt svar"),
     )
   })
@@ -327,7 +327,7 @@ server <- function(input, output, session) {
                             "men at den blir stoppet fra å etablere seg lenger vest og sør?"
                             ),
                           value= "",
-                          width = "25%"),
+                          width = "75%"),
       actionButton("submit_wtp_revised", "Send inn ditt svar")
     )
   })
@@ -349,12 +349,12 @@ server <- function(input, output, session) {
       shiny::numericInput(inputId = "age",
                        label = "Hvor gammel er du?",
                        value= "",
-                       width = "50%"),
+                       width = "75%"),
       selectInput(inputId = "gender",
                   label = "Jeg er: ",
                   choices = c("", "Kvinne", "Mann", "Annet", "Foretrekker ikke å si"),
                   selected = character(0),
-                  width = "50%"),
+                  width = "75%"),
       actionButton("submit_socio", "Send inn ditt svar")
         
     )
