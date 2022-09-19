@@ -28,3 +28,77 @@ create_wtp_question <- function(wtp, distance, treatment) {
   
   return(txt)
 }
+
+#' Create the "average" guess
+#'
+#' "Triangualtes" the center location among all guesses stored in the database
+#' by taking the average of the longitudes and the average of the latitudes to
+#' to get the "central" location.
+#' 
+#' Note that this approach **ignores** the curvature of the Earth. It small
+#' scales this should not matter. 
+#'
+#' The idea is that as more guesses are added, this location should trend 
+#' towards the TRUE location. I've added timestamps to the data so that we can
+#' create an animation of the guessing process (in a separate app), which should
+#' help visualize the 'wisdom of the crowds' in this context.
+#'
+#' @inheritParams save_db
+avg_guess <- function(conn, table) {
+  return(
+    tbl(conn, table) %>%
+      filter(id != "initialize") %>%
+      summarize(
+        avg_guess_lng = mean(lng, na.rm = TRUE),
+        avg_guess_lat = mean(lat, na.rm = TRUE)
+      ) %>% 
+      collect
+  )
+}
+
+#' Save to database
+#'
+#' @param conn A database connection
+#' @param x A named list of data. Note that the data type must match the data
+#' types defined in the database. Inputs that are strings must have the '' as
+#' part of the string. Otherwise the database connection will fail.
+#' @param table A string with the name of the table in the database
+#' 
+save_db <- function(conn, x, table) {
+  # Interpolate the elements of x
+  x <- do.call(c, lapply(x, function(y) {
+    sql <- "?value"
+    sqlInterpolate(conn, sql, value = y)
+  }))
+  
+  # Construct the query for sending data
+  query <- sprintf(
+    "INSERT INTO %s (%s) VALUES (%s)",
+    table,
+    paste(names(x), collapse = ", "),
+    paste(x, collapse = ", ")
+  )
+  
+  # Submit the query to the database
+  RMariaDB::dbExecute(conn, query)
+}
+
+
+# # Initialize the guesses table in the database
+# dbWriteTable(
+#   conn = pool,
+#   name = "location_guesses",
+#   value = tibble(
+#     id = paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = ""),
+#     timestamp_start = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+#     timestart_end = format(Sys.time(), "%Y-%m-%d %H:%M:%S"), 
+#     treatment = "TREA",
+#     lng = 71.00000000,
+#     lat = 71.00000000,
+#     wtp_original = 99999,
+#     wtp_revised = 99999,
+#     age = 99,
+#     gender = "Foretrekker ikke å si"
+#   ),
+#   overwrite = TRUE
+# )

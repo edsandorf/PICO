@@ -80,90 +80,12 @@ base_map <- function() {
     # )
 }
 
-#' Save to database
-#'
-#' @param conn A database connection
-#' @param x A named list of data. Note that the data type must match the data
-#' types defined in the database. Inputs that are strings must have the '' as
-#' part of the string. Otherwise the database connection will fail.
-#' @param table A string with the name of the table in the database
-#' 
-save_db <- function(conn, x, table) {
-  # Interpolate the elements of x
-  x <- do.call(c, lapply(x, function(y) {
-    sql <- "?value"
-    sqlInterpolate(conn, sql, value = y)
-  }))
-  
-  # Construct the query for sending data
-  query <- sprintf(
-    "INSERT INTO %s (%s) VALUES (%s)",
-    table,
-    paste(names(x), collapse = ", "),
-    paste(x, collapse = ", ")
-  )
-  
-  # Submit the query to the database
-  RMariaDB::dbExecute(conn, query)
-}
-
-#' Define end of session 
-#' 
-#' Define a function for what happens when the session ends
-on_session_ended <- function() {
-  
-}
-
-#' Create the "average" guess
-#'
-#' "Triangualtes" the center location among all guesses stored in the database
-#' by taking the average of the longitudes and the average of the latitudes to
-#' to get the "central" location.
-#' 
-#' Note that this approach **ignores** the curvature of the Earth. It small
-#' scales this should not matter. 
-#'
-#' The idea is that as more guesses are added, this location should trend 
-#' towards the TRUE location. I've added timestamps to the data so that we can
-#' create an animation of the guessing process (in a separate app), which should
-#' help visualize the 'wisdom of the crowds' in this context.
-#'
-#' @inheritParams save_db
-avg_guess <- function(conn, table) {
-  return(
-    tbl(conn, table) %>%
-      filter(id != "initialize") %>%
-      summarize(
-        avg_guess_lng = mean(lng, na.rm = TRUE),
-        avg_guess_lat = mean(lat, na.rm = TRUE)
-      ) %>% 
-      collect
-  )
-}
 
 
 
-# Set up a DB connection ----
-# If not on shinyapps.io, set to local to handle connections for testing
-# if () {
-#   
-# }
-Sys.setenv(R_CONFIG_ACTIVE = "local")
 
-# Get the connection details
-# db_config <- config::get("dataconnection")
 
-# Set up the pool for effective handling of multiple connections
-# pool <- pool::dbPool(
-#   drv = RMariaDB::MariaDB(),
-#   dbname = db_config$dbname,
-#   host = db_config$host,
-#   username = db_config$username,
-#   password = db_config$password,
-#   ssl.key = db_config$ssl.key,
-#   ssl.cert = db_config$ssl.cert,
-#   ssl.ca = db_config$ssl.ca
-# )
+
 
 
 # Define global variables ----
