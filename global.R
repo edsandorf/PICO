@@ -84,7 +84,7 @@ save_db <- function(conn, x, table) {
 }
 
 
-# # Initialize the guesses table in the database
+# Initialize the guesses table in the database
 # dbWriteTable(
 #   conn = pool,
 #   name = "location_guesses",
@@ -92,6 +92,7 @@ save_db <- function(conn, x, table) {
 #     id = paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = ""),
 #     timestamp_start = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
 #     timestamp_end = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+#     timezone = "averylongtimezone/includingcharacters",
 #     treatment = "TREA",
 #     lng = 71.00000000,
 #     lat = 71.00000000,

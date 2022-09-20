@@ -134,7 +134,7 @@ server <- function(input, output, session) {
   # Randomly allocate people to the more than or less than treatment
   id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "") 
   treatment <- sample(c("more", "less"), 1)
-  timestamp_start <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+  timestamp_start <- 
   
   # Create a reactive value for the page that can update when the submit button
   # is clicked. 
@@ -146,8 +146,9 @@ server <- function(input, output, session) {
   # Create an empty tibble and assign values to it.
   results <- tibble(
     id = id,
-    timestamp_start = timestamp_start,
+    timestamp_start = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
     timestamp_end = NA, 
+    timezone = Sys.timezone(),
     treatment = treatment,
     lng = NA,
     lat = NA,
@@ -192,7 +193,7 @@ server <- function(input, output, session) {
   # By default the next button is disabled until a choice is made
   output$map_ui <- renderUI({
     tagList(
-      h2("Norske myndigheter ønsker og stoppe kongekrabbe fra å spre seg sør-vest fra Nordkapp (til venstre og nedover langs kysten av Norge). Hvor tror du kongekrabbe har blitt sett og fanget?"),
+      h2("Norske myndigheter ønsker og stoppe kongekrabbe fra å spre seg sør-vest fra Nordkapp (til venstre og nedover langs kysten av Norge). Hva er det lengste sør-vest du tror du kongekrabbe har blitt sett og fanget?"),
       div(class = "map-output", leafletOutput("map")),
       shinyjs::disabled(
         actionButton("submit_guess", "Send inn ditt svar")
