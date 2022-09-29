@@ -12,19 +12,21 @@ create_wtp_question <- function(wtp, distance, treatment) {
   sig <- 1.35 * distance
   
   start <- paste0("Basert på våre beregninger er gjennomsnittlig betalingsvilje for å stoppe kongekrabbe fra å etablere seg ",
-                round(distance, 0), " km fra Nordkapp ", round(mu, 0), " kroner per år. Du har sagt du er villig til å betale ", wtp, " kroner. Da er")
+                round(distance, 0), " km fra Nordkapp ", round(mu, 0), " kroner per år. Du har sagt du er villig til å betale ", wtp, " kroner. Da er du villig til å betale ",
+                ifelse(mu > wtp, "mindre ", "mer "), "enn gjennomsnittet i befolkningen.\n\n")
   
   # Generate the correct question based on the treatment
-  middle <- switch(treatment,
-                more = paste0(" du villig til å betale mer enn ",
-                              floor(pnorm(wtp, mu, sig) * 100),
-                              "% av den norske befolkningen"),
-                less = paste0(ceiling((1 - pnorm(wtp, mu, sig)) * 100), 
-                              "% av den norske befolkning villig til å betale mer enn deg."))
+  # middle <- switch(treatment,
+  #               more = paste0(" du villig til å betale mer enn ",
+  #                             floor(pnorm(wtp, mu, sig) * 100),
+  #                             "% av den norske befolkningen"),
+  #               less = paste0(ceiling((1 - pnorm(wtp, mu, sig)) * 100), 
+  #                             "% av den norske befolkning villig til å betale mer enn deg."))
   
   end <- "Ønsker du å endre hvor mye du er villig til å betale?"
   
-  txt <- paste(start, middle, end, sep = " ")
+  # txt <- paste(start, middle, end, sep = " ")
+  txt <- paste(start, end, sep = " ")
   
   return(txt)
 }
