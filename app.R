@@ -23,19 +23,19 @@ library(tibble)
 source("global.R")
 
 # Get the connection details
-db_config <- config::get("dataconnection")
+# db_config <- config::get("dataconnection")
 
 # Set up the pool for effective handling of multiple connections
-pool <- pool::dbPool(
-  drv = RMariaDB::MariaDB(),
-  dbname = db_config$dbname,
-  host = db_config$host,
-  username = db_config$username,
-  password = db_config$password
-  # ssl.key = db_config$ssl.key,
-  # ssl.cert = db_config$ssl.cert,
-  # ssl.ca = db_config$ssl.ca
-)
+# pool <- pool::dbPool(
+#   drv = RMariaDB::MariaDB(),
+#   dbname = db_config$dbname,
+#   host = db_config$host,
+#   username = db_config$username,
+#   password = db_config$password
+#   # ssl.key = db_config$ssl.key,
+#   # ssl.cert = db_config$ssl.cert,
+#   # ssl.ca = db_config$ssl.ca
+# )
 
 
 # Define functions ----
@@ -48,7 +48,8 @@ pool <- pool::dbPool(
 #' The function does not take any arguments
 base_map <- function() {
   leaflet() %>% 
-    addProviderTiles(providers$Esri.OceanBasemap) %>%
+    # addProviderTiles(providers$Esri.OceanBasemap) %>%
+    addProviderTiles(providers$OpenStreetMap) %>%
     clearControls() %>% 
     clearMarkers() %>% 
     clearPopups() %>% 
@@ -134,7 +135,6 @@ server <- function(input, output, session) {
   # Randomly allocate people to the more than or less than treatment
   id <- paste0(sample(c(letters, LETTERS, 0:9), 10), collapse = "") 
   treatment <- sample(c("more", "less"), 1)
-  timestamp_start <- 
   
   # Create a reactive value for the page that can update when the submit button
   # is clicked. 
@@ -172,12 +172,12 @@ server <- function(input, output, session) {
       # Save the guess to the database. NB! Each click of the button creates a new
       # entry in the database
       
-      dbWriteTable(
-        conn = pool,
-        name = "location_guesses",
-        value = results,
-        append = TRUE
-      )
+      # dbWriteTable(
+      #   conn = pool,
+      #   name = "location_guesses",
+      #   value = results,
+      #   append = TRUE
+      # )
       
     }
   )
